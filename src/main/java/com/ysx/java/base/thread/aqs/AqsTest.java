@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -16,11 +17,18 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *  CLH队列 一个双向链表，无法获取锁的线程创建一个链表节点加入到链表中，阻塞线程(AQS对CLH的一个变种，CLH本身会自旋，竞争激烈阻塞性能更好)
  *      头结点
  *      尾节点
- *  等待队列
  *  状态 加锁次数计数(可重入锁)
  *  当前独占线程
  *
+ *  隐: 条件队列 即使用 Condition 时 调用 await 方法，会创建特殊的 node ，并加入到 条件队列中，调用 signal 方法时 将 node 转移到 CLH 队列
+ *               和CLH队列的区别 主要是 1. 条件队列是单向的，非CLH那样双向
+ *                                      2. CLH 插入节点时必须默认创建一个头结点，条件队列不用
+ *                                      3. 队列的节点不同，条件队列没有使用CLH节点中的前驱，后驱节点，只用了独有的 nextWaiter 字段
+ *
  * AQS 的阻塞和唤醒操作是 unsafe.park unpark  底层也是调操作系统，AQS线程唤醒，不会唤醒所有，唤醒CLH队列最近一个节点
+ *
+ * 在 ReentrantLock 的CLH队列实现中，会默认创建一个链表的头结点，作用是方便一些逻辑编程
+ * 例如:快速判断节点是否在同步队列中，可以判断前驱节点是否为null，为null一定不再CLH队列中(在条件队列)
  *
  */
 public class AqsTest {
@@ -36,7 +44,8 @@ public class AqsTest {
 
     public static void main(String[] args) throws InterruptedException {
         //  -------- ReentrantLock 测试 ------
-        testReentLock();
+        //testReentLock();
+
 
         //  -------- Semaphore 测试 ------
         // testSemaphore();
@@ -66,9 +75,10 @@ public class AqsTest {
         // testCountDownLatch();
 
         //  --------  ReentrantReadWriteLock 读写锁测试 ------
-        // testReadAndWriteLock();
+       //  testReadAndWriteLock();
 
     }
+
 
     /**
      * CountDownLatch 小结:
@@ -177,12 +187,12 @@ public class AqsTest {
 
     /**
      *  读写锁
-     *  读时其他线程可读 其余情况都互斥 (读时不可写，需读完)
-     *  
+     *  1.读时其他线程可读 其余情况都互斥 (读时不可写，需读完)
+     *  2.第一个线程读时当第二个线程线程要写，第二个线程写会阻塞，直到第一个线程读完成，此时如果有第三个线程要读，也会被阻塞，直到第二个线程写完成
      */
     private static void testReadAndWriteLock(){
-        //  for (int i = 0; i<5; i++){
-            int i = 1;
+          for (int i = 0; i<2; i++){
+            // int i = 1;
             new Thread(()->{
                 String threadName = Thread.currentThread().getName();
                 System.out.println(threadName+currentTime()+"读锁前准备执行");
@@ -194,7 +204,7 @@ public class AqsTest {
                 System.out.println(threadName+currentTime()+"预离开读锁");
                 reentrantReadWriteLock.readLock().unlock();
             },"读锁线程-"+i).start();
-      //  }
+       }
 
         reentrantReadWriteLock.writeLock().lock();
         System.out.println( Thread.currentThread().getName()+currentTime()+"进入写锁");

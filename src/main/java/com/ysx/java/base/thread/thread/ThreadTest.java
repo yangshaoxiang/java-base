@@ -12,7 +12,7 @@ public class ThreadTest {
             @Override
             public Integer call() throws Exception {
                 System.out.println("进入callable");
-                Thread.sleep(1000);
+                Thread.sleep(2000);
                 return 1;
             }
         };
