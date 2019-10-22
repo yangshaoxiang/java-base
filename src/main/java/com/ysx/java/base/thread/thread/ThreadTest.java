@@ -1,13 +1,51 @@
 package com.ysx.java.base.thread.thread;
 
+import sun.misc.Unsafe;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.locks.LockSupport;
 
 public class ThreadTest {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
-        //ThreadExceptionCatch();
+        // ThreadExceptionCatch();
+        // testCall();
+        testPark();
 
+    }
+
+    /**
+     *  测试 park 方法 -- 可以先unpark，后面unpark的线程park时，直接过去，不会阻塞
+     */
+    private static void testPark() {
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("子线程--进入-预备睡2s"+"--"+currentTime());
+                try {
+                    Thread.sleep(2000L);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                LockSupport.park();
+                System.out.println("子线程--完毕"+"--"+currentTime());
+            }
+        },"子线程");
+        t1.start();
+        //Thread.sleep(2000L);
+        System.out.println("主线程解锁子线程");
+        LockSupport.unpark(t1);
+    }
+
+
+    /**
+     *  测试返回值线程
+     *
+     */
+    private static void testCall() throws InterruptedException, ExecutionException {
         Callable<Integer> callable = new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
@@ -56,4 +94,13 @@ public class ThreadTest {
         });
         th.start();
     }
+
+    /**
+     *  获取当前时间字符串
+     */
+    private static String currentTime(){
+        return "-" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+    }
+
+
 }

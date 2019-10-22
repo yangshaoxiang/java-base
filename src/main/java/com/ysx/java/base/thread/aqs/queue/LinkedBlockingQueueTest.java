@@ -1,5 +1,6 @@
 package com.ysx.java.base.thread.aqs.queue;
 
+import java.util.PriorityQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -30,6 +31,11 @@ public class LinkedBlockingQueueTest {
 
         // 出队
         blockingQueue.take(); // 断点
+
+    }
+
+    public static void main1(String[] args) {
+        PriorityQueue<String> q = new PriorityQueue<String>();
 
     }
 }
