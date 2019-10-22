@@ -5,8 +5,6 @@ import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -18,6 +16,15 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *      头结点
  *      尾节点
  *  状态 加锁次数计数(可重入锁)
+ *      state ：
+ *            0  表示未获取锁的 CLH 节点的一般初始状态  常见的就是 CLH 队列中的尾节点
+ *           -1  在 CLH 队列中除尾节点之外，其余节点的状态 表示的含义的是 该节点不是 CLH 最后一个节点，因此当该节点释放同步状态需要通知后继节点，使后继节点线程运行
+ *           -2  表示节点在 条件队列中，当其他线程对Condition调用了signal()方法后，该节点会转移到 CLH 队列，状态变为 0 并将原来状态为0的 CLH 尾节点设为 -1
+ *            1  表示节点 等待超时 或者节点对应线程被中断 此时设置节点状态为 1 取消等待
+ *           -3  共享模式下，前继结点不仅会唤醒其后继结点，同时也可能会唤醒后继的后继结点
+ *
+ *       ps: 负值表示结点处于有效等待状态，而正值表示结点已被取消。所以源码中很多地方用>0、<0来判断结点的状态是否正常
+ *
  *  当前独占线程
  *
  *  隐: 条件队列 即使用 Condition 时 调用 await 方法，会创建特殊的 node ，并加入到 条件队列中，调用 signal 方法时 将 node 转移到 CLH 队列
@@ -29,6 +36,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *
  * 在 ReentrantLock 的CLH队列实现中，会默认创建一个链表的头结点，作用是方便一些逻辑编程
  * 例如:快速判断节点是否在同步队列中，可以判断前驱节点是否为null，为null一定不再CLH队列中(在条件队列)
+ *
+ * 一些设计思想:
+ * 参考 https://www.cnblogs.com/waterystone/p/4920797.html
+ * 独占模式 tryAcquire-tryRelease 共享模式 tryAcquireShared-tryReleaseShared 等方法 并未设计成抽象方法 而是设计为普通方法，方法实现直接抛异常，明显意为开发者去实现
+ * 那这里为何不设计为抽象方法，强制开发者去实现呢？因为强制实现，可能只需要使用AQS的独占模式，确不得一并不实现共享模式，反之亦然，所以这里未设计为抽象方法，而是抛异常，由开发者按需实现
  *
  */
 public class AqsTest {

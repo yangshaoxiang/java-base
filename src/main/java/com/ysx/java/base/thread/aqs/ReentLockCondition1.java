@@ -8,7 +8,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * 2. Condition 的 await 和 signal 必须在持有锁的线程中使用
  *
  *  注意:
- *  Condition的signal方法，即唤醒方法大体来说只是将代表当前线程的 Node 节点，从条件队列中移到 CLH 队列中，实际是没什么唤醒操作的
+ *  Condition的signal方法，即唤醒方法大体来说只是将代表当前线程的 Node 节点，从条件队列中移到 CLH 队列中(变更state字段从-2变为0，出条件队列，入CLH队列，CLH前驱节点转态变-1，表示该节点后面有节点待唤醒)，实际是没什么唤醒操作的
  *  真实的唤醒，还是调用Condition 的 signal 方法所在线程，释放 ReentLock 锁时，按照正常流程唤醒CLH队列阻塞节点
  *
  *  Condition的 await 方法 创建Node节点进入条件队列，释放当前线程持有的所有锁，最后调用 park 方法阻塞当前线程
