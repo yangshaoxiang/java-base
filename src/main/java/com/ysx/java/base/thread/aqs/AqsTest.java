@@ -32,7 +32,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *                                      2. CLH 插入节点时必须默认创建一个头结点，条件队列不用
  *                                      3. 队列的节点不同，条件队列没有使用CLH节点中的前驱，后驱节点，只用了独有的 nextWaiter 字段
  *
- * AQS 的阻塞和唤醒操作是 unsafe.park unpark  底层也是调操作系统，AQS线程唤醒，不会唤醒所有，唤醒CLH队列最近一个节点
+ * AQS 的阻塞和唤醒操作是 cas.park unpark  底层也是调操作系统，AQS线程唤醒，不会唤醒所有，唤醒CLH队列最近一个节点
  *
  * 在 ReentrantLock 的CLH队列实现中，会默认创建一个链表的头结点，作用是方便一些逻辑编程
  * 例如:快速判断节点是否在同步队列中，可以判断前驱节点是否为null，为null一定不再CLH队列中(在条件队列)
@@ -95,9 +95,9 @@ public class AqsTest {
     /**
      * CountDownLatch 小结:
      * 基于 AQS 的共享模式 非公平实现 同 Semaphore 初始化类似，即给 state 设置一个数值初始值
-     *  调用 CountDownLatch 的 await 方法，若state 不为0，当前线程加入到 CLH 队列 并阻塞(unsafe.park())当前调用线程
+     *  调用 CountDownLatch 的 await 方法，若state 不为0，当前线程加入到 CLH 队列 并阻塞(cas.park())当前调用线程
      *  调用 CountDownLatch 的 countDown 方法，效果是 state - 1 当 state 减为 0 时，唤醒 CLH 中首节点下一节点的等待节点
-     *        CLH 的其他等待节点由该等待节点的上一节点唤醒(unsafe.unpark()) ,只有首节点的下一节点由最后一个执行 countDown 方法的线程唤醒
+     *        CLH 的其他等待节点由该等待节点的上一节点唤醒(cas.unpark()) ,只有首节点的下一节点由最后一个执行 countDown 方法的线程唤醒
      *
      *  因此对于我们使用 CountDownLatch 的一个场景:
      *   并发测试场景 即期望所有线程同时并发执行来模拟多线程并发，其实深究也并非是同时执行的(可以理解成另一种非公平的)
@@ -109,7 +109,7 @@ public class AqsTest {
      *
      *   断点位置 (jdk 1.8.0_172)
      *   AbstractQueuedSynchronizer 类 1342 行 state 减到 0 时开始释放节点
-     *   AbstractQueuedSynchronizer 类 662 行  当前线程准备调用 unsafe.unpark() 方法 唤醒指定的线程
+     *   AbstractQueuedSynchronizer 类 662 行  当前线程准备调用 cas.unpark() 方法 唤醒指定的线程
      */
     private static void testCountDownLatch() throws InterruptedException {
         int countDownLatchNum = 2;
@@ -165,7 +165,7 @@ public class AqsTest {
 
     /**
      *  基于 AQS 的共享模式，初始设置 state 数量
-     *  调用 Semaphore 的 acquire 方法，若state 大于 0，直接执行业务，state - 1，否则新线程加入到CLH队列，使用 unsafe.park() 阻塞线程
+     *  调用 Semaphore 的 acquire 方法，若state 大于 0，直接执行业务，state - 1，否则新线程加入到CLH队列，使用 cas.park() 阻塞线程
      *  调用 Semaphore 的 release 方法，state+1，唤醒CLH队列首节点下一节点，公平非公平和锁一样，即获取信号量时判断CLH队列是否有线程阻塞
      */
     private static void testSemaphore() {
