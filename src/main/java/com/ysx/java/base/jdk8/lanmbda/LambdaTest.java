@@ -78,6 +78,8 @@ public class LambdaTest {
         Runnable runnable1 = () -> System.out.println("Lambda 无入参无出参Lambda匿名实例创建");
         runnable1.run();
 
+
+
         System.out.println();
     }
 
@@ -94,12 +96,15 @@ public class LambdaTest {
                 System.out.println("入参:" + input);
             }
         };
+
         oneIn0OutInterface.oneInMethod("传统 一入参无出参匿名实例创建");
 
         // Lambda 编写
         //括号表示方法参数列表 {}内编写实现方法的内容 如果参数只有一个可以不写小括号 如果方法只有一行 可以省略 {}
         OneIn0OutInterface oneIn0OutInterface1 = input -> System.out.println("入参:" + input);
         oneIn0OutInterface1.oneInMethod("Lambda 一入参无出参Lambda匿名实例创建");
+        // 进一步简化
+        // oneIn0OutInterface1 = System.out::print;
 
         // Consumer JDK 内置的 1参0返，在代码中如果需要1参0返的匿名函数可以优先考虑内置的
         Consumer<String> consumer = e -> System.out.println("入参:"+e);
