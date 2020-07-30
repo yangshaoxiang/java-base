@@ -1,5 +1,7 @@
 package com.ysx.java.data_structure.datastructure.self;
 
+import org.apache.commons.math3.analysis.function.Sin;
+
 /**
  * 自实现链表类，该类线程不安全
  */
@@ -82,7 +84,7 @@ public class LinkClass {
 	 * 单链表反转
 	 */
 	public void reverse() {
-		// SingleNode tmp = head;
+		// SingleNode tmp = sentryHead;
 		SingleNode next = null;
 		SingleNode pre = null;
 		if (head == null) {
@@ -173,7 +175,7 @@ public class LinkClass {
 
 		public static void main(String[] args) {
 		/*	LinkClass linkClass = new LinkClass();
-			for (int i = 0; i < 10; i++) {
+			for (int i = 1; i < 6; i++) {
 				linkClass.addNode(i);
 			}
 			linkClass.printAllNode();
@@ -186,10 +188,10 @@ public class LinkClass {
 			linkClass.reverse();
 			linkClass.printAllNode();*/
 			
-			LinkClass linkClass = new LinkClass(true);
+		/*	LinkClass linkClass = new LinkClass(true);
 			SingleNode node = null;
-			for (int i = 1; i < 3; i++) {
-				if(i==1){
+			for (int i = 1; i < 7; i++) {
+				if(i==3){
 					 node = linkClass.addNode(i);
 				}else{
 					linkClass.addNode(i);
@@ -198,11 +200,70 @@ public class LinkClass {
 			SingleNode singleNode = linkClass.addNode(3);
 			
 			boolean cycle2 = linkClass.isCycle(node);
-			System.out.println("是否环:"+cycle2);
-			
-			
-			
-		}
+			System.out.println("是否环:"+cycle2);*/
 
+		// 构造一个 1,2,3,4,5,6 链表 6指向 3环链
+		    SingleNode head = null;
+		    SingleNode tail = null;
+		    SingleNode cyclenode = null;
+			for(int i=1;i<7;i++){
+				int value = 7 - i;
+				SingleNode singleNode = new SingleNode(value, head);
+				head = singleNode;
+				if(value == 3){
+					cyclenode = singleNode;
+				}
+				if(tail == null){
+					tail = singleNode;
+				}
+			}
+			tail.next = cyclenode;
+
+			SingleNode singleNode = detectCycle(head);
+			System.out.println(singleNode.data);
+
+		}
+	}
+
+
+	public static SingleNode detectCycle(SingleNode head) {
+		// 快漫指针判断是否环链
+		SingleNode slowNode = head;
+		SingleNode fastNode = head;
+		SingleNode meetNode = null;
+		while (fastNode!=null&&fastNode.next!=null){
+			slowNode = slowNode.next;
+			fastNode = fastNode.next.next;
+			if(slowNode == fastNode){
+				meetNode = slowNode;
+				break;
+			}
+		}
+		if(meetNode==null){
+			return  null;
+		}
+		//第二轮指针，判断环链入口  头结点 和 相遇节点每次都走一步，相遇即为 环链初始节点
+		/*
+		起点到环链初始点路程 HS (sentryHead node -> start node)
+		环链初始点到快漫相遇节点路程 SM(start node -> meet node)
+		快漫相遇节点路程到链表末尾 MT (meet node -> tail node)
+		链表末尾到相遇节点路程 TM = SM+1 (tail node -> meet node)
+		链表长度 L = HS + SM + MT
+		相遇时快指针路程 SF = L+TM = HS + SM + MT + TM
+		相遇时慢指针路程 SS = HS + SM
+		快指针是慢指针2倍速 2SS = SF  即  HS +SM = MT + TM = MT +1+SM
+		得出:
+		HS = MT +1
+		MT+1其实就是从相遇节点到链表初始节点 距离 MS
+		即 HS = MS
+		即从起点走到环链初始点 = 从相遇点走到环链初始点
+		*/
+		SingleNode startHeadNode = head;
+		SingleNode startMeetNode = meetNode;
+		while (startHeadNode!=startMeetNode){
+			startHeadNode = startHeadNode.next;
+			startMeetNode = startMeetNode.next;
+		}
+		return startHeadNode;
 	}
 }

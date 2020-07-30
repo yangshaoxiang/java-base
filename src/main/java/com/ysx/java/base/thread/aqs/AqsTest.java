@@ -107,7 +107,7 @@ public class AqsTest {
      *   测试:
      *   保证CLH 队列顺序 子线程1 子线程2 main线程 后 测试100次state减为0时 线程1先执行94次 线程2线执行6次 main先执行0次 基本第一次阻塞唤醒后执行业务的线程是子线程1 基本上面猜想正确
      *
-     *   断点位置 (jdk 1.8.0_172)
+     *   断点位置 (jvm 1.8.0_172)
      *   AbstractQueuedSynchronizer 类 1342 行 state 减到 0 时开始释放节点
      *   AbstractQueuedSynchronizer 类 662 行  当前线程准备调用 cas.unpark() 方法 唤醒指定的线程
      */

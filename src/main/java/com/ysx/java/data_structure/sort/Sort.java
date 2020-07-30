@@ -1,10 +1,11 @@
 package com.ysx.java.data_structure.sort;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class Sort {
 
-    public static void main(String[] args) {
+    public static void main1(String[] args) {
        int[] nums = {4,6,8,1,2,9,0,3};
         //int[] nums = {6,4};
         int[] sortnums = {0, 1, 2, 3, 4, 6, 8, 9};
@@ -15,6 +16,7 @@ public class Sort {
    /*     int[] mergeSort = mergeSort(nums);
         System.out.println(Arrays.toString(mergeSort));*/
     }
+
 
     /**
      * 冒泡排序 - 从小到大

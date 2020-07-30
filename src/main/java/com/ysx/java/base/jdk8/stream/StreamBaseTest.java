@@ -5,26 +5,54 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
 /**
  *  重点:
- *  1. 集合转化为流后，流和集合是类似引用关系，集合数据变更，对流是有影响的，反过来则不成立 例如 流过滤一些数据，原始集合不受影响
- *  2. 对于 集合的 功能性操作 只是 先搞出功能性操作的函数式，并未实际操作，实际操作是在，流实际被使用 例如遍历
- *  3. 流实际只能被打开使用一次  例如 forEach 只能使用一次，使用后，流已不可操作
+ * ①Stream 自己不会存储元素。
+ * ②Stream 不会改变源对象。相反，他们会返回一个持有结果的新Stream。
+ * ③Stream 操作是延迟执行的。这意味着他们会等到需要结果的时候才执行。
+ *
+ *  中间操作:
+ *  操作结果是一个stream,中间操作可以有一个或多个连续的中间操作，需要注意的是，中间操作
+ *  只记录操作方式，不做具体处理，直到结束操作发生时，操作数据的最终执行
+ *  中间操作：就是业务逻辑处理
+ *  中间操作过程：
+ *         无状态：数据处理时，不受前置中间操作的影响
+ *                   map/filter/peek/pasallel/sequential/unordered
+ *        有状态：数据处理时，收到前置中间操作的影响
+ *                   distinct/sorted/limit/skip
+ *
+ * 终结操作\结束操作(Terminal)
+ * 需要注意：一个stream对象，只能有一个Terminal操作，这个操作一旦发生，就会真是处理数据
+ *  终结操作：
+ *             非短路操作：当前的Stream对象必须处理完集合的所有数据，才能的到处理结果
+ *                         forEach/forEachOrdered/toArray/reduce/collect/min/max/count/iterator
+ *             短路操作：当前的Stream对象必须在处理过程中，一旦满足某个条件，就可以得到结果
+ *                         anyMatch/allMatch/noneMatch/findFirst/findAny等
+ *             Short-circuiting，当无限大的Stream -> 有限大的Stream，可以使用短路操作
+ *
  *
  */
-public class StreamTest {
+public class StreamBaseTest {
 
     public static void main(String[] args) {
+        String s = null;
+        Integer ssss = Optional.ofNullable(s).map(String::length).get();
+        System.out.println(ssss);
         List<String> languageList = new ArrayList<>();
         languageList.add("js");
         languageList.add("java");
         languageList.add("php");
         languageList.add("c++");
         languageList.add("html");
+
+
+
+
         //Arrays.asList("java","php","c++","js","html");
         for (String language : languageList) {
             System.out.println(language);
@@ -61,20 +89,22 @@ public class StreamTest {
         System.out.println("====================以下为流元素操作====================");
         // 流操作 map 对 流内容进行操作并返回 1参1返 jdk8 内置 Function 接口 入参为 元素内容 出参为 操作后的元素
         Stream<String> afterMapStream = afterFilterStream.map(String::toUpperCase);
-        // afterMapStream.forEach(System.out::println);
+         afterMapStream.forEach(System.out::println);
+         // 测试 map 操作 原始集合不受影响
+       // System.out.println(languageList);
 
         System.out.println("====================以下为流排序操作====================");
-        Stream<String> afterSortStream = afterMapStream.sorted();
+       // Stream<String> afterSortStream = afterMapStream.sorted();
         // afterSortStream.forEach(System.out::println);
 
         System.out.println("====================以下为流转集合操作====================");
-        List<String> newLanguageList = afterSortStream.collect(toList());
+       /* List<String> newLanguageList = afterSortStream.collect(toList());
         for (String newLangura : newLanguageList) {
             System.out.println(newLangura);
-        }
+        }*/
 
         System.out.println("====================流可链式调用，以上一行代码操作====================");
-        newLanguageList = languageList
+       /* newLanguageList = languageList
                 .stream()
                 .filter(language->language.startsWith("j"))
                 .map(String::toUpperCase)
@@ -82,7 +112,7 @@ public class StreamTest {
                 .collect(toList());
         for (String s : newLanguageList) {
             System.out.println(s);
-        }
+        }*/
 
         System.out.println("====================数组转换成流====================");
         String[] languageArray = {"java","php","c++","js","html"};

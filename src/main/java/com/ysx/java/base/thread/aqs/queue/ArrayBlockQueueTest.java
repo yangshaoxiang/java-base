@@ -1,5 +1,9 @@
 package com.ysx.java.base.thread.aqs.queue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
@@ -24,7 +28,7 @@ import java.util.concurrent.ArrayBlockingQueue;
  *  take         移除并返回队列头部的元素          如果队列为空，则阻塞
  */
 public class ArrayBlockQueueTest {
-    public static void main(String[] args) throws InterruptedException {
+    public static void main1(String[] args) throws InterruptedException {
         ArrayBlockingQueue<String> arrayBlockingQueue = new ArrayBlockingQueue<String>(1);
         arrayBlockingQueue.put("主线程放入的值");
         new Thread(() -> {
@@ -40,4 +44,22 @@ public class ArrayBlockQueueTest {
         arrayBlockingQueue.take();
 
     }
+
+    // [[-1,-1,2],[-1,0,1]]
+    public static void main(String[] args) {
+        int[] aa = {-1,-100,3,99,78};
+        reserve(aa);
+        System.out.println(Arrays.toString(aa));
+    }
+
+    public static void reserve(int[] digits) {
+        int length = digits.length;
+        int mid = length / 2;
+        for(int i = 0;i<=mid-1;i++){
+            int qian = digits[i];
+            digits[i] = digits[length-1-i];
+            digits[length-1-i] = qian;
+       }
+    }
+
 }
