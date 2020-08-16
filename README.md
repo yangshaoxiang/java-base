@@ -1,6 +1,6 @@
 # a
 
-[引用b](#b)
+[引用bbbb](#bbb)
 a  a  
 a  
 a  
@@ -15,7 +15,7 @@ dsds
 a  
 ### aaa
 
-[引用bbbb](#bbb)
+
 a  a  
 a  
 a  
