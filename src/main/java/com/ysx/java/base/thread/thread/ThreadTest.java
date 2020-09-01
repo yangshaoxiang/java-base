@@ -4,16 +4,45 @@ import sun.misc.Unsafe;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.LockSupport;
 
 public class ThreadTest {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         // ThreadExceptionCatch();
         // testCall();
-        testPark();
+       // testPark();
+        con();
+    }
+
+    private static void con(){
+        CountDownLatch countDownLatch = new CountDownLatch(10);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("子线程");
+                try {
+                    countDownLatch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("唤醒");
+            }
+        }).start();
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        for(int i=0;i<100;i++){
+            System.out.println(i);
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            countDownLatch.countDown();
+        }
 
     }
 
